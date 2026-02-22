@@ -2,17 +2,25 @@ const express = require('express');
 const { google } = require('googleapis');
 const router = express.Router();
 
-function getOAuth2Client() {
+function getRedirectUri(req) {
+  if (process.env.GOOGLE_REDIRECT_URI) return process.env.GOOGLE_REDIRECT_URI;
+  // Auto-detect on Vercel: use the request host so preview URLs work
+  const proto = req?.headers['x-forwarded-proto'] || 'http';
+  const host = req?.headers['x-forwarded-host'] || req?.headers.host || 'localhost:3001';
+  return `${proto}://${host}/auth/google/callback`;
+}
+
+function getOAuth2Client(req) {
   return new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
     process.env.GOOGLE_CLIENT_SECRET,
-    process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3001/auth/google/callback'
+    getRedirectUri(req)
   );
 }
 
 // Start OAuth flow
 router.get('/google', (req, res) => {
-  const oauth2Client = getOAuth2Client();
+  const oauth2Client = getOAuth2Client(req);
   const scopes = [
     'https://www.googleapis.com/auth/spreadsheets',
     'https://www.googleapis.com/auth/drive.file',
@@ -39,7 +47,7 @@ router.get('/google/callback', async (req, res) => {
   }
 
   try {
-    const oauth2Client = getOAuth2Client();
+    const oauth2Client = getOAuth2Client(req);
     const { tokens } = await oauth2Client.getToken(code);
     oauth2Client.setCredentials(tokens);
 
