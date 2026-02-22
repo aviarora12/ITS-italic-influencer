@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useData } from '../context/DataContext';
-import { useApp } from '../context/AppContext';
+
 import { statusColor, typeColor, getStatusesForType, daysSince, formatDate } from '../utils/formatters';
 import KanbanBoard from '../components/campaigns/KanbanBoard';
 import CampaignDetailPanel from '../components/campaigns/CampaignDetailPanel';
@@ -10,14 +10,14 @@ import Modal from '../components/common/Modal';
 import { SkeletonTable } from '../components/common/Skeleton';
 
 export default function Campaigns() {
-  const { campaigns, loading, addCampaign, saveCampaign, removeCampaign } = useData();
-  const { toast } = useApp();
+  const { campaigns, loading, addCampaign, removeCampaign } = useData();
+
   const [searchParams] = useSearchParams();
   const [view, setView] = useState('kanban');
   const [selectedCampaign, setSelectedCampaign] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [filter, setFilter] = useState({ type: '', status: '', search: '' });
-  const [sortBy, setSortBy] = useState('updatedAt');
+  const [sortBy] = useState('updatedAt');
 
   // Open campaign from URL param
   useEffect(() => {
