@@ -3,7 +3,7 @@ import { useData } from '../../context/DataContext';
 import { getStatusesForType } from '../../utils/formatters';
 
 const OUTREACH_CHANNELS = ['Instagram DM', 'Facebook Creator Marketplace', 'Email'];
-const PLATFORMS = ['Instagram', 'TikTok', 'YouTube'];
+
 
 export default function CampaignForm({ initial = {}, onSave, onCancel }) {
   const { influencers } = useData();

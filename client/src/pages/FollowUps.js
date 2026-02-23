@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useData } from '../context/DataContext';
 import { SkeletonCard } from '../components/common/Skeleton';
@@ -36,15 +36,6 @@ const TYPE_COLOR = {
 export default function FollowUps() {
   const { reminders, loading } = useData();
   const navigate = useNavigate();
-
-  const grouped = useMemo(() => {
-    const groups = {};
-    reminders.forEach(r => {
-      if (!groups[r.type]) groups[r.type] = [];
-      groups[r.type].push(r);
-    });
-    return groups;
-  }, [reminders]);
 
   const highPriority = reminders.filter(r => r.priority === 'high');
   const mediumPriority = reminders.filter(r => r.priority === 'medium');

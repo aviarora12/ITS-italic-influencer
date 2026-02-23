@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useData } from '../context/DataContext';
-import { SkeletonCard, SkeletonBlock } from '../components/common/Skeleton';
-import { statusColor, typeColor, formatDateTime } from '../utils/formatters';
+import { SkeletonCard } from '../components/common/Skeleton';
+import { statusColor, formatDateTime } from '../utils/formatters';
 
 function StatCard({ label, value, sub, color = 'indigo' }) {
   const colors = {
