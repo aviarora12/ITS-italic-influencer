@@ -1,34 +1,22 @@
 const express = require('express');
 const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
-const sheetsService = require('../services/googleSheets');
+const store = require('../services/localStore');
 
-function requireAuth(req, res, next) {
-  if (!req.session.tokens) return res.status(401).json({ error: 'Not authenticated' });
-  next();
-}
+router.get('/', (req, res) => res.json(store.readSheet('ActivityLog')));
 
-router.get('/', requireAuth, async (req, res) => {
+router.post('/', (req, res) => {
   try {
-    const log = await sheetsService.readSheet(req.session.tokens, 'ActivityLog');
-    res.json(log);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-router.post('/', requireAuth, async (req, res) => {
-  try {
-    const now = new Date().toISOString();
+    const b = req.body;
     const row = {
       'ID': uuidv4(),
-      'Campaign ID': req.body.campaignId || req.body['Campaign ID'] || '',
-      'Influencer Name': req.body.influencerName || req.body['Influencer Name'] || '',
-      'Note': req.body.note || req.body['Note'] || '',
-      'Created By': req.body.createdBy || req.session.user?.name || 'Team',
-      'Created At': now,
+      'Campaign ID': b['Campaign ID'] || b.campaignId || '',
+      'Influencer Name': b['Influencer Name'] || b.influencerName || '',
+      'Note': b['Note'] || b.note || '',
+      'Created By': b.createdBy || 'Team',
+      'Created At': new Date().toISOString(),
     };
-    await sheetsService.appendRow(req.session.tokens, 'ActivityLog', row);
+    store.appendRow('ActivityLog', row);
     res.json(row);
   } catch (err) {
     res.status(500).json({ error: err.message });

@@ -1,26 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
-const sheetsService = require('../services/googleSheets');
+const store = require('../services/localStore');
 
-function requireAuth(req, res, next) {
-  if (!req.session.tokens) return res.status(401).json({ error: 'Not authenticated' });
-  next();
-}
-
-router.get('/', requireAuth, async (req, res) => {
-  try {
-    const influencers = await sheetsService.readSheet(req.session.tokens, 'Influencers');
-    res.json(influencers);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+router.get('/', (req, res) => {
+  res.json(store.readSheet('Influencers'));
 });
 
-router.post('/', requireAuth, async (req, res) => {
+router.post('/', (req, res) => {
   try {
-    const now = new Date().toISOString();
-    const influencer = {
+    const row = {
       'ID': uuidv4(),
       'Name': req.body.name || '',
       'Handle': req.body.handle || '',
@@ -29,38 +18,39 @@ router.post('/', requireAuth, async (req, res) => {
       'Email': req.body.email || '',
       'Platform': req.body.platform || 'Instagram',
       'Notes': req.body.notes || '',
-      'Created At': now,
+      'Created At': new Date().toISOString(),
     };
-    await sheetsService.appendRow(req.session.tokens, 'Influencers', influencer);
-    res.json(influencer);
+    store.appendRow('Influencers', row);
+    res.json(row);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-router.put('/:id', requireAuth, async (req, res) => {
+router.put('/:id', (req, res) => {
   try {
-    const influencer = {
+    const b = req.body;
+    const row = {
       'ID': req.params.id,
-      'Name': req.body.name || req.body['Name'] || '',
-      'Handle': req.body.handle || req.body['Handle'] || '',
-      'Instagram URL': req.body.instagramUrl || req.body['Instagram URL'] || '',
-      'Follower Count': String(req.body.followerCount || req.body['Follower Count'] || ''),
-      'Email': req.body.email || req.body['Email'] || '',
-      'Platform': req.body.platform || req.body['Platform'] || 'Instagram',
-      'Notes': req.body.notes || req.body['Notes'] || '',
-      'Created At': req.body.createdAt || req.body['Created At'] || '',
+      'Name': b['Name'] || b.name || '',
+      'Handle': b['Handle'] || b.handle || '',
+      'Instagram URL': b['Instagram URL'] || b.instagramUrl || '',
+      'Follower Count': String(b['Follower Count'] || b.followerCount || ''),
+      'Email': b['Email'] || b.email || '',
+      'Platform': b['Platform'] || b.platform || 'Instagram',
+      'Notes': b['Notes'] || b.notes || '',
+      'Created At': b['Created At'] || b.createdAt || '',
     };
-    await sheetsService.updateRow(req.session.tokens, 'Influencers', req.params.id, influencer);
-    res.json(influencer);
+    store.updateRow('Influencers', req.params.id, row);
+    res.json(row);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-router.delete('/:id', requireAuth, async (req, res) => {
+router.delete('/:id', (req, res) => {
   try {
-    await sheetsService.deleteRow(req.session.tokens, 'Influencers', req.params.id);
+    store.deleteRow('Influencers', req.params.id);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
