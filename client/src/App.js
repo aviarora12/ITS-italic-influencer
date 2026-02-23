@@ -15,19 +15,25 @@ import FollowUps from './pages/FollowUps';
 import { getSheetsStatus } from './services/api';
 
 function AppRouter() {
-  const { loadAll } = useData();
-  const [hasData, setHasData] = useState(null);
+  const { loadAll, loadDemo } = useData();
+  const [ready, setReady] = useState(false);
+  const [showSetup, setShowSetup] = useState(false);
 
   useEffect(() => {
     getSheetsStatus()
       .then(async ({ hasData }) => {
         if (hasData) await loadAll();
-        setHasData(hasData);
+        else setShowSetup(true);
+        setReady(true);
       })
-      .catch(() => setHasData(false));
+      .catch(() => {
+        // Server unreachable (e.g. Vercel preview) — enter demo mode
+        loadDemo();
+        setReady(true);
+      });
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  if (hasData === null) {
+  if (!ready) {
     return (
       <div className="min-h-screen bg-[#0f1117] flex items-center justify-center">
         <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
@@ -35,11 +41,11 @@ function AppRouter() {
     );
   }
 
-  if (!hasData) {
+  if (showSetup) {
     return (
       <Setup onComplete={async () => {
         await loadAll();
-        setHasData(true);
+        setShowSetup(false);
       }} />
     );
   }
