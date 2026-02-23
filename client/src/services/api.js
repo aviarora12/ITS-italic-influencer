@@ -1,18 +1,11 @@
 import axios from 'axios';
 
-const api = axios.create({
-  baseURL: '',
-  withCredentials: true,
-});
+const api = axios.create({ baseURL: '' });
 
-// Auth
-export const getMe = () => api.get('/auth/me').then(r => r.data);
-export const logout = () => api.post('/auth/logout').then(r => r.data);
-
-// Sheets
-export const initSheets = () => api.post('/api/sheets/init').then(r => r.data);
+// Sheets / setup
 export const getSheetsStatus = () => api.get('/api/sheets/status').then(r => r.data);
 export const seedDemoData = () => api.post('/api/sheets/seed').then(r => r.data);
+export const initSheets = () => api.post('/api/sheets/init').then(r => r.data);
 
 // Campaigns
 export const getCampaigns = () => api.get('/api/campaigns').then(r => r.data);
@@ -47,7 +40,3 @@ export const createActivity = (data) => api.post('/api/activity', data).then(r =
 
 // Reminders
 export const getReminders = () => api.get('/api/reminders').then(r => r.data);
-
-// Import
-export const previewImport = (urls) => api.post('/api/import/preview', { urls }).then(r => r.data);
-export const runImport = (urls) => api.post('/api/import/run', { urls }).then(r => r.data);

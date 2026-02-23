@@ -1,26 +1,16 @@
 const express = require('express');
 const router = express.Router();
 const { v4: uuidv4 } = require('uuid');
-const sheetsService = require('../services/googleSheets');
+const store = require('../services/localStore');
 
-function requireAuth(req, res, next) {
-  if (!req.session.tokens) return res.status(401).json({ error: 'Not authenticated' });
-  next();
-}
-
-router.get('/', requireAuth, async (req, res) => {
-  try {
-    const campaigns = await sheetsService.readSheet(req.session.tokens, 'Campaigns');
-    res.json(campaigns);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+router.get('/', (req, res) => {
+  res.json(store.readSheet('Campaigns'));
 });
 
-router.post('/', requireAuth, async (req, res) => {
+router.post('/', (req, res) => {
   try {
     const now = new Date().toISOString();
-    const campaign = {
+    const row = {
       'ID': uuidv4(),
       'Influencer ID': req.body.influencerId || '',
       'Influencer Name': req.body.influencerName || '',
@@ -36,43 +26,43 @@ router.post('/', requireAuth, async (req, res) => {
       'Created At': now,
       'Updated At': now,
     };
-    await sheetsService.appendRow(req.session.tokens, 'Campaigns', campaign);
-    res.json(campaign);
+    store.appendRow('Campaigns', row);
+    res.json(row);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-router.put('/:id', requireAuth, async (req, res) => {
+router.put('/:id', (req, res) => {
   try {
     const now = new Date().toISOString();
-    const existing = req.body;
-    const campaign = {
+    const b = req.body;
+    const row = {
       'ID': req.params.id,
-      'Influencer ID': existing.influencerId || existing['Influencer ID'] || '',
-      'Influencer Name': existing.influencerName || existing['Influencer Name'] || '',
-      'Type': existing.type || existing['Type'] || '',
-      'Status': existing.status || existing['Status'] || '',
-      'Deliverable': existing.deliverable || existing['Deliverable'] || '',
-      'Rate': existing.rate || existing['Rate'] || '',
-      'Product': existing.product || existing['Product'] || '',
-      'Outreach Channel': existing.outreachChannel || existing['Outreach Channel'] || '',
-      'DM Link': existing.dmLink || existing['DM Link'] || '',
-      'Contact Email': existing.contactEmail || existing['Contact Email'] || '',
-      'Notes': existing.notes || existing['Notes'] || '',
-      'Created At': existing.createdAt || existing['Created At'] || '',
+      'Influencer ID': b['Influencer ID'] || b.influencerId || '',
+      'Influencer Name': b['Influencer Name'] || b.influencerName || '',
+      'Type': b['Type'] || b.type || '',
+      'Status': b['Status'] || b.status || '',
+      'Deliverable': b['Deliverable'] || b.deliverable || '',
+      'Rate': b['Rate'] || b.rate || '',
+      'Product': b['Product'] || b.product || '',
+      'Outreach Channel': b['Outreach Channel'] || b.outreachChannel || '',
+      'DM Link': b['DM Link'] || b.dmLink || '',
+      'Contact Email': b['Contact Email'] || b.contactEmail || '',
+      'Notes': b['Notes'] || b.notes || '',
+      'Created At': b['Created At'] || b.createdAt || '',
       'Updated At': now,
     };
-    await sheetsService.updateRow(req.session.tokens, 'Campaigns', req.params.id, campaign);
-    res.json(campaign);
+    store.updateRow('Campaigns', req.params.id, row);
+    res.json(row);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-router.delete('/:id', requireAuth, async (req, res) => {
+router.delete('/:id', (req, res) => {
   try {
-    await sheetsService.deleteRow(req.session.tokens, 'Campaigns', req.params.id);
+    store.deleteRow('Campaigns', req.params.id);
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
